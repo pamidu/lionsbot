@@ -1,0 +1,30 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ .Values.ingress.name }}
+  annotations:
+    ingress.kubernetes.io/rewrite-target: {{ .Values.ingress.contextpath }}
+    alb.ingress.kubernetes.io/healthcheck-path: {{ .Values.ingress.healthcheck }}
+#    ingress.kubernetes.io/rewrite-target: /
+    # nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    # nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+    # nginx.ingress.kubernetes.io/rewrite-target: /account-service
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip 
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+    alb.ingress.kubernetes.io/certificate-arn: {{ .Values.ingress.certificate }}
+    alb.ingress.kubernetes.io/group.name: {{ .Values.ingress.group }}
+spec:
+  tls:
+  - hosts:
+    - {{ .Values.ingress.domain }}
+  rules:
+  #- host: {{ .Values.ingress.domain }}
+  - http:
+      paths:
+        - path: {{ .Values.ingress.contextpath }}
+          pathType: Prefix
+          backend:
+            serviceName: {{ include "sf.fullname" . }}
+            servicePort: {{ .Values.service.port }}
